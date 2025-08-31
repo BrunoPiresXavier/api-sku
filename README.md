@@ -16,7 +16,7 @@
 
 ```bash
 git clone https://github.com/BrunoPiresXavier/api-sku.git
-cd sku-management-api
+cd api-sku
 ```
 
 ### 2. Instalar dependências
@@ -42,15 +42,13 @@ DB_DATABASE=sku_management
 
 ### 4. Subir o banco de dados
 
-````bash
+```bash
 # Subir apenas o PostgreSQL
 docker compose up -d postgres
 
 ### 5. Executar migrações
-
-```bash
 pnpm run migration:run
-````
+```
 
 ### 6. Iniciar a aplicação
 
