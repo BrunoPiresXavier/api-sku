@@ -1,15 +1,8 @@
-import { SkuInputDTO, SkuStatusEnum } from '../../sku/sku.dto';
+import { SkuStatusEnum } from '../../sku/sku.dto';
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('sku')
 export class SkuEntity {
-  applyUpdate(dto: SkuInputDTO) {
-    if (dto.description) this.description = dto.description;
-    if (dto.commercialDescription)
-      this.commercialDescription = dto.commercialDescription;
-    if (dto.sku) this.sku = dto.sku;
-  }
-
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
