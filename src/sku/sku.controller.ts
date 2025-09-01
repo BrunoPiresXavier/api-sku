@@ -19,12 +19,26 @@ import {
   ApiOkResponse,
 } from '@nestjs/swagger';
 import { SkuInputDTO, SkuDto, SkuStatusEnum } from './sku.dto';
-import { SkuService } from './sku.service';
+import {
+  CreateSkuUseCase,
+  FindAllSkusUseCase,
+  FindSkuByIdUseCase,
+  FindSkuByCodeUseCase,
+  UpdateSkuUseCase,
+  UpdateSkuStatusUseCase,
+} from './use-cases';
 
 @ApiTags('sku')
 @Controller('sku')
 export class SkuController {
-  constructor(private readonly skuService: SkuService) {}
+  constructor(
+    private readonly createSkuUseCase: CreateSkuUseCase,
+    private readonly findAllSkusUseCase: FindAllSkusUseCase,
+    private readonly findSkuByIdUseCase: FindSkuByIdUseCase,
+    private readonly findSkuByCodeUseCase: FindSkuByCodeUseCase,
+    private readonly updateSkuUseCase: UpdateSkuUseCase,
+    private readonly updateSkuStatusUseCase: UpdateSkuStatusUseCase,
+  ) {}
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
@@ -54,7 +68,20 @@ export class SkuController {
     },
   })
   async create(@Body() sku: SkuInputDTO) {
-    return await this.skuService.create(sku);
+    return await this.createSkuUseCase.execute(sku);
+  }
+
+  @Get('/')
+  @ApiOperation({
+    summary: 'Buscar lista de SKU',
+    description: 'Retorna uma lista de SKU',
+  })
+  @ApiOkResponse({
+    description: 'Lista de SKU',
+    type: SkuDto,
+  })
+  async findAll(): Promise<SkuDto[]> {
+    return await this.findAllSkusUseCase.execute();
   }
 
   @Put('/:id')
@@ -83,10 +110,10 @@ export class SkuController {
     description: 'Dados para atualização do SKU',
   })
   async update(@Param('id') id: string, @Body() sku: SkuInputDTO) {
-    return await this.skuService.update(id, sku);
+    return await this.updateSkuUseCase.execute(id, sku);
   }
 
-  @Put('/:id/status/:status')
+  @Put('/:id/status')
   @ApiOperation({
     summary: 'Atualizar status do SKU',
     description:
@@ -97,11 +124,16 @@ export class SkuController {
     description: 'ID único do SKU (UUID)',
     example: '123e4567-e89b-12d3-a456-426614174000',
   })
-  @ApiParam({
-    name: 'status',
-    description: 'Novo status do SKU',
-    enum: SkuStatusEnum,
-    example: 'CADASTRO_COMPLETO',
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        status: { type: 'string', enum: Object.keys(SkuStatusEnum) },
+      },
+      example: {
+        status: SkuStatusEnum.ATIVO,
+      },
+    },
   })
   @ApiOkResponse({
     description: 'Status do SKU atualizado com sucesso',
@@ -113,13 +145,37 @@ export class SkuController {
   @ApiBadRequestResponse({
     description: 'Transição de status não permitida',
   })
-  async updateStatus(@Param('id') id: string, @Param('status') status: string) {
-    return await this.skuService.updateStatus(id, SkuStatusEnum[status]);
+  async updateStatus(
+    @Param('id') id: string,
+    @Body('status') status: SkuStatusEnum,
+  ) {
+    return await this.updateSkuStatusUseCase.execute(id, status);
   }
 
-  @Get('/:id')
+  @Get('/:sku')
   @ApiOperation({
-    summary: 'Buscar SKU por ID',
+    summary: 'Buscar por SKU',
+    description: 'Retorna os dados completos de um SKU específico',
+  })
+  @ApiParam({
+    name: 'sku',
+    description: 'Código único do SKU',
+    example: 'GB-12345',
+  })
+  @ApiOkResponse({
+    description: 'SKU encontrado',
+    type: SkuDto,
+  })
+  @ApiNotFoundResponse({
+    description: 'SKU não encontrado',
+  })
+  async findBySku(@Param('sku') sku: string): Promise<SkuDto> {
+    return await this.findSkuByCodeUseCase.execute(sku);
+  }
+
+  @Get('/id/:id')
+  @ApiOperation({
+    summary: 'Buscar por ID do SKU',
     description: 'Retorna os dados completos de um SKU específico',
   })
   @ApiParam({
@@ -134,10 +190,7 @@ export class SkuController {
   @ApiNotFoundResponse({
     description: 'SKU não encontrado',
   })
-  @ApiBadRequestResponse({
-    description: 'ID inválido (formato UUID incorreto)',
-  })
   async findById(@Param('id') id: string): Promise<SkuDto> {
-    return await this.skuService.findById(id);
+    return await this.findSkuByIdUseCase.execute(id);
   }
 }
