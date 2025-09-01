@@ -59,6 +59,54 @@ describe('SkuController (e2e)', () => {
       });
   });
 
+  it('should get all SKUs', async () => {
+    const sku1Data = {
+      description: 'SKU 1',
+      commercialDescription: 'Commercial Description 1',
+      sku: 'SKU-001',
+    };
+    const sku2Data = {
+      description: 'SKU 2',
+      commercialDescription: 'Commercial Description 2',
+      sku: 'SKU-002',
+    };
+
+    await request(app.getHttpServer()).post('/sku').send(sku1Data);
+    await request(app.getHttpServer()).post('/sku').send(sku2Data);
+
+    return request(app.getHttpServer())
+      .get('/sku/')
+      .expect(200)
+      .expect((res: { body: SkuDto[] }) => {
+        expect(Array.isArray(res.body)).toBe(true);
+        expect(res.body).toHaveLength(2);
+
+        const skuCodes = res.body.map((sku) => sku.sku);
+        expect(skuCodes).toContain('SKU-001');
+        expect(skuCodes).toContain('SKU-002');
+
+        res.body.forEach((sku) => {
+          expect(sku).toHaveProperty('id');
+          expect(sku).toHaveProperty('description');
+          expect(sku).toHaveProperty('commercialDescription');
+          expect(sku).toHaveProperty('sku');
+          expect(sku).toHaveProperty('status');
+          expect(sku).toHaveProperty('createdAt');
+          expect(sku).toHaveProperty('updatedAt');
+        });
+      });
+  });
+
+  it('should return empty array when no SKUs exist', () => {
+    return request(app.getHttpServer())
+      .get('/sku/')
+      .expect(200)
+      .expect((res: { body: SkuDto[] }) => {
+        expect(Array.isArray(res.body)).toBe(true);
+        expect(res.body).toHaveLength(0);
+      });
+  });
+
   it('should get by ID', async () => {
     const createResponse: { body: SkuDto } = await request(app.getHttpServer())
       .post('/sku')
