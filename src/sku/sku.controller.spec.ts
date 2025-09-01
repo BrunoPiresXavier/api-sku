@@ -1,17 +1,46 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { SkuController } from './sku.controller';
-import { SkuService } from './sku.service';
 import { SkuInputDTO, SkuStatusEnum, SkuDto } from './sku.dto';
+import {
+  CreateSkuUseCase,
+  FindAllSkusUseCase,
+  FindSkuByIdUseCase,
+  FindSkuByCodeUseCase,
+  UpdateSkuUseCase,
+  UpdateSkuStatusUseCase,
+} from './use-cases';
 
 describe('SkuController', () => {
   let controller: SkuController;
-  let service: SkuService;
+  let createSkuUseCase: CreateSkuUseCase;
+  let findAllSkusUseCase: FindAllSkusUseCase;
+  let findSkuByIdUseCase: FindSkuByIdUseCase;
+  let findSkuByCodeUseCase: FindSkuByCodeUseCase;
+  let updateSkuUseCase: UpdateSkuUseCase;
+  let updateSkuStatusUseCase: UpdateSkuStatusUseCase;
 
-  const mockSkuService = {
-    create: jest.fn(),
-    update: jest.fn(),
-    updateStatus: jest.fn(),
-    findById: jest.fn(),
+  const mockCreateSkuUseCase = {
+    execute: jest.fn(),
+  };
+
+  const mockFindAllSkusUseCase = {
+    execute: jest.fn(),
+  };
+
+  const mockFindSkuByIdUseCase = {
+    execute: jest.fn(),
+  };
+
+  const mockFindSkuByCodeUseCase = {
+    execute: jest.fn(),
+  };
+
+  const mockUpdateSkuUseCase = {
+    execute: jest.fn(),
+  };
+
+  const mockUpdateSkuStatusUseCase = {
+    execute: jest.fn(),
   };
 
   const mockSkuInputDTO: SkuInputDTO = {
@@ -35,14 +64,42 @@ describe('SkuController', () => {
       controllers: [SkuController],
       providers: [
         {
-          provide: SkuService,
-          useValue: mockSkuService,
+          provide: CreateSkuUseCase,
+          useValue: mockCreateSkuUseCase,
+        },
+        {
+          provide: FindAllSkusUseCase,
+          useValue: mockFindAllSkusUseCase,
+        },
+        {
+          provide: FindSkuByIdUseCase,
+          useValue: mockFindSkuByIdUseCase,
+        },
+        {
+          provide: FindSkuByCodeUseCase,
+          useValue: mockFindSkuByCodeUseCase,
+        },
+        {
+          provide: UpdateSkuUseCase,
+          useValue: mockUpdateSkuUseCase,
+        },
+        {
+          provide: UpdateSkuStatusUseCase,
+          useValue: mockUpdateSkuStatusUseCase,
         },
       ],
     }).compile();
 
     controller = module.get<SkuController>(SkuController);
-    service = module.get<SkuService>(SkuService);
+    createSkuUseCase = module.get<CreateSkuUseCase>(CreateSkuUseCase);
+    findAllSkusUseCase = module.get<FindAllSkusUseCase>(FindAllSkusUseCase);
+    findSkuByIdUseCase = module.get<FindSkuByIdUseCase>(FindSkuByIdUseCase);
+    findSkuByCodeUseCase =
+      module.get<FindSkuByCodeUseCase>(FindSkuByCodeUseCase);
+    updateSkuUseCase = module.get<UpdateSkuUseCase>(UpdateSkuUseCase);
+    updateSkuStatusUseCase = module.get<UpdateSkuStatusUseCase>(
+      UpdateSkuStatusUseCase,
+    );
 
     // Reset all mocks before each test
     jest.clearAllMocks();
@@ -54,23 +111,36 @@ describe('SkuController', () => {
 
   describe('create', () => {
     it('should create a new SKU', async () => {
-      mockSkuService.create.mockResolvedValue(mockSkuDto);
+      mockCreateSkuUseCase.execute.mockResolvedValue(mockSkuDto);
 
       const result = await controller.create(mockSkuInputDTO);
 
-      expect(service.create).toHaveBeenCalledWith(mockSkuInputDTO);
-      expect(service.create).toHaveBeenCalledTimes(1);
+      expect(createSkuUseCase.execute).toHaveBeenCalledWith(mockSkuInputDTO);
+      expect(createSkuUseCase.execute).toHaveBeenCalledTimes(1);
       expect(result).toEqual(mockSkuDto);
     });
 
-    it('should throw error when service throws', async () => {
-      const error = new Error('Service error');
-      mockSkuService.create.mockRejectedValue(error);
+    it('should throw error when use case throws', async () => {
+      const error = new Error('SKU already exists');
+      mockCreateSkuUseCase.execute.mockRejectedValue(error);
 
       await expect(controller.create(mockSkuInputDTO)).rejects.toThrow(
-        'Service error',
+        'SKU already exists',
       );
-      expect(service.create).toHaveBeenCalledWith(mockSkuInputDTO);
+      expect(createSkuUseCase.execute).toHaveBeenCalledWith(mockSkuInputDTO);
+    });
+  });
+
+  describe('findAll', () => {
+    it('should return all SKUs', async () => {
+      const mockSkuList = [mockSkuDto];
+      mockFindAllSkusUseCase.execute.mockResolvedValue(mockSkuList);
+
+      const result = await controller.findAll();
+
+      expect(findAllSkusUseCase.execute).toHaveBeenCalledWith();
+      expect(findAllSkusUseCase.execute).toHaveBeenCalledTimes(1);
+      expect(result).toEqual(mockSkuList);
     });
   });
 
@@ -79,67 +149,64 @@ describe('SkuController', () => {
     const updatedSkuDto = { ...mockSkuDto, description: 'Updated Description' };
 
     it('should update a SKU', async () => {
-      mockSkuService.update.mockResolvedValue(updatedSkuDto);
+      mockUpdateSkuUseCase.execute.mockResolvedValue(updatedSkuDto);
 
       const result = await controller.update(skuId, mockSkuInputDTO);
 
-      expect(service.update).toHaveBeenCalledWith(skuId, mockSkuInputDTO);
-      expect(service.update).toHaveBeenCalledTimes(1);
+      expect(updateSkuUseCase.execute).toHaveBeenCalledWith(
+        skuId,
+        mockSkuInputDTO,
+      );
+      expect(updateSkuUseCase.execute).toHaveBeenCalledTimes(1);
       expect(result).toEqual(updatedSkuDto);
     });
 
-    it('should throw error when service throws', async () => {
+    it('should throw error when use case throws', async () => {
       const error = new Error('SKU not found');
-      mockSkuService.update.mockRejectedValue(error);
+      mockUpdateSkuUseCase.execute.mockRejectedValue(error);
 
       await expect(controller.update(skuId, mockSkuInputDTO)).rejects.toThrow(
         'SKU not found',
       );
-      expect(service.update).toHaveBeenCalledWith(skuId, mockSkuInputDTO);
+      expect(updateSkuUseCase.execute).toHaveBeenCalledWith(
+        skuId,
+        mockSkuInputDTO,
+      );
     });
   });
 
   describe('updateStatus', () => {
     const skuId = '123e4567-e89b-12d3-a456-426614174000';
-    const status = 'CADASTRO_COMPLETO';
+    const status = SkuStatusEnum.CADASTRO_COMPLETO;
     const updatedSkuDto = {
       ...mockSkuDto,
       status: SkuStatusEnum.CADASTRO_COMPLETO,
     };
 
     it('should update SKU status', async () => {
-      mockSkuService.updateStatus.mockResolvedValue(updatedSkuDto);
+      mockUpdateSkuStatusUseCase.execute.mockResolvedValue(updatedSkuDto);
 
       const result = await controller.updateStatus(skuId, status);
 
-      expect(service.updateStatus).toHaveBeenCalledWith(
+      expect(updateSkuStatusUseCase.execute).toHaveBeenCalledWith(
         skuId,
-        SkuStatusEnum.CADASTRO_COMPLETO,
+        status,
       );
-      expect(service.updateStatus).toHaveBeenCalledTimes(1);
+      expect(updateSkuStatusUseCase.execute).toHaveBeenCalledTimes(1);
       expect(result).toEqual(updatedSkuDto);
     });
 
-    it('should throw error when service throws', async () => {
+    it('should throw error when use case throws', async () => {
       const error = new Error('Invalid status transition');
-      mockSkuService.updateStatus.mockRejectedValue(error);
+      mockUpdateSkuStatusUseCase.execute.mockRejectedValue(error);
 
       await expect(controller.updateStatus(skuId, status)).rejects.toThrow(
         'Invalid status transition',
       );
-      expect(service.updateStatus).toHaveBeenCalledWith(
+      expect(updateSkuStatusUseCase.execute).toHaveBeenCalledWith(
         skuId,
-        SkuStatusEnum.CADASTRO_COMPLETO,
+        status,
       );
-    });
-
-    it('should handle invalid status enum', async () => {
-      const invalidStatus = 'INVALID_STATUS';
-      mockSkuService.updateStatus.mockResolvedValue(mockSkuDto);
-
-      await controller.updateStatus(skuId, invalidStatus);
-
-      expect(service.updateStatus).toHaveBeenCalledWith(skuId, undefined);
     });
   });
 
@@ -147,32 +214,45 @@ describe('SkuController', () => {
     const skuId = '123e4567-e89b-12d3-a456-426614174000';
 
     it('should find SKU by ID', async () => {
-      mockSkuService.findById.mockResolvedValue(mockSkuDto);
+      mockFindSkuByIdUseCase.execute.mockResolvedValue(mockSkuDto);
 
       const result = await controller.findById(skuId);
 
-      expect(service.findById).toHaveBeenCalledWith(skuId);
-      expect(service.findById).toHaveBeenCalledTimes(1);
+      expect(findSkuByIdUseCase.execute).toHaveBeenCalledWith(skuId);
+      expect(findSkuByIdUseCase.execute).toHaveBeenCalledTimes(1);
       expect(result).toEqual(mockSkuDto);
     });
 
     it('should throw error when SKU not found', async () => {
       const error = new Error('SKU not found');
-      mockSkuService.findById.mockRejectedValue(error);
+      mockFindSkuByIdUseCase.execute.mockRejectedValue(error);
 
       await expect(controller.findById(skuId)).rejects.toThrow('SKU not found');
-      expect(service.findById).toHaveBeenCalledWith(skuId);
+      expect(findSkuByIdUseCase.execute).toHaveBeenCalledWith(skuId);
+    });
+  });
+
+  describe('findBySku', () => {
+    const skuCode = 'TEST-SKU-001';
+
+    it('should find SKU by code', async () => {
+      mockFindSkuByCodeUseCase.execute.mockResolvedValue(mockSkuDto);
+
+      const result = await controller.findBySku(skuCode);
+
+      expect(findSkuByCodeUseCase.execute).toHaveBeenCalledWith(skuCode);
+      expect(findSkuByCodeUseCase.execute).toHaveBeenCalledTimes(1);
+      expect(result).toEqual(mockSkuDto);
     });
 
-    it('should throw error for invalid UUID format', async () => {
-      const invalidId = 'invalid-uuid';
-      const error = new Error('Invalid UUID format');
-      mockSkuService.findById.mockRejectedValue(error);
+    it('should throw error when SKU not found', async () => {
+      const error = new Error('SKU not found');
+      mockFindSkuByCodeUseCase.execute.mockRejectedValue(error);
 
-      await expect(controller.findById(invalidId)).rejects.toThrow(
-        'Invalid UUID format',
+      await expect(controller.findBySku(skuCode)).rejects.toThrow(
+        'SKU not found',
       );
-      expect(service.findById).toHaveBeenCalledWith(invalidId);
+      expect(findSkuByCodeUseCase.execute).toHaveBeenCalledWith(skuCode);
     });
   });
 });

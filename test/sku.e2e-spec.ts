@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import request from 'supertest';
 import { AppModule } from '../src/app.module';
-import { SkuStatusEnum } from '../src/sku/sku.dto';
+import { SkuDto, SkuStatusEnum } from '../src/sku/sku.dto';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { SkuEntity } from '../src/db/entities/sku.entity';
 import { Repository } from 'typeorm';
@@ -51,7 +51,7 @@ describe('SkuController (e2e)', () => {
       .post('/sku')
       .send(validSkuData)
       .expect(201)
-      .expect((res) => {
+      .expect((res: { body: SkuDto }) => {
         expect(res.body).toHaveProperty('id');
         expect(res.body.description).toBe(validSkuData.description);
         expect(res.body.status).toBe(SkuStatusEnum.PRE_CADASTRO);
@@ -59,23 +59,23 @@ describe('SkuController (e2e)', () => {
   });
 
   it('should get by ID', async () => {
-    const createResponse = await request(app.getHttpServer())
+    const createResponse: { body: SkuDto } = await request(app.getHttpServer())
       .post('/sku')
       .send(validSkuData);
 
     const skuId = createResponse.body.id;
 
     return request(app.getHttpServer())
-      .get(`/sku/${skuId}`)
+      .get(`/sku/id/${skuId}`)
       .expect(200)
-      .expect((res) => {
+      .expect((res: { body: SkuDto }) => {
         expect(res.body.id).toBe(skuId);
         expect(res.body.description).toBe(validSkuData.description);
       });
   });
 
   it('should update by ID', async () => {
-    const createResponse = await request(app.getHttpServer())
+    const createResponse: { body: SkuDto } = await request(app.getHttpServer())
       .post('/sku')
       .send(validSkuData);
 
@@ -86,23 +86,23 @@ describe('SkuController (e2e)', () => {
       .put(`/sku/${skuId}`)
       .send(updateData)
       .expect(200)
-      .expect((res) => {
+      .expect((res: { body: SkuDto }) => {
         expect(res.body.description).toBe(updateData.description);
       });
   });
 
   it('should update status', async () => {
-    const createResponse = await request(app.getHttpServer())
+    const createResponse: { body: SkuDto } = await request(app.getHttpServer())
       .post('/sku')
       .send(validSkuData);
 
     const skuId = createResponse.body.id;
 
-    // Depois atualizar o status
     return request(app.getHttpServer())
-      .put(`/sku/${skuId}/status/CADASTRO_COMPLETO`)
+      .put(`/sku/${skuId}/status`)
+      .send({ status: SkuStatusEnum.CADASTRO_COMPLETO })
       .expect(200)
-      .expect((res) => {
+      .expect((res: { body: SkuDto }) => {
         expect(res.body.status).toBe(SkuStatusEnum.CADASTRO_COMPLETO);
       });
   });
