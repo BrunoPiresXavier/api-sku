@@ -6,7 +6,6 @@ import { SkuInputDTO, SkuStatusEnum, SkuDto } from '../sku.dto';
 
 describe('CreateSkuUseCase', () => {
   let useCase: CreateSkuUseCase;
-  let skuRepository: SkuRepository;
 
   const mockSkuRepository = {
     findOneBySku: jest.fn(),
@@ -41,7 +40,6 @@ describe('CreateSkuUseCase', () => {
     }).compile();
 
     useCase = module.get<CreateSkuUseCase>(CreateSkuUseCase);
-    skuRepository = module.get<SkuRepository>(SkuRepository);
 
     jest.clearAllMocks();
   });
@@ -57,10 +55,10 @@ describe('CreateSkuUseCase', () => {
 
       const result = await useCase.execute(mockSkuInputDTO);
 
-      expect(skuRepository.findOneBySku).toHaveBeenCalledWith(
+      expect(mockSkuRepository.findOneBySku).toHaveBeenCalledWith(
         mockSkuInputDTO.sku,
       );
-      expect(skuRepository.save).toHaveBeenCalledWith(
+      expect(mockSkuRepository.save).toHaveBeenCalledWith(
         mockSkuInputDTO,
         SkuStatusEnum.PRE_CADASTRO,
       );
@@ -77,10 +75,10 @@ describe('CreateSkuUseCase', () => {
         ),
       );
 
-      expect(skuRepository.findOneBySku).toHaveBeenCalledWith(
+      expect(mockSkuRepository.findOneBySku).toHaveBeenCalledWith(
         mockSkuInputDTO.sku,
       );
-      expect(skuRepository.save).not.toHaveBeenCalled();
+      expect(mockSkuRepository.save).not.toHaveBeenCalled();
     });
   });
 });

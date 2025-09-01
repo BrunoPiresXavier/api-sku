@@ -12,12 +12,6 @@ import {
 
 describe('SkuController', () => {
   let controller: SkuController;
-  let createSkuUseCase: CreateSkuUseCase;
-  let findAllSkusUseCase: FindAllSkusUseCase;
-  let findSkuByIdUseCase: FindSkuByIdUseCase;
-  let findSkuByCodeUseCase: FindSkuByCodeUseCase;
-  let updateSkuUseCase: UpdateSkuUseCase;
-  let updateSkuStatusUseCase: UpdateSkuStatusUseCase;
 
   const mockCreateSkuUseCase = {
     execute: jest.fn(),
@@ -91,15 +85,6 @@ describe('SkuController', () => {
     }).compile();
 
     controller = module.get<SkuController>(SkuController);
-    createSkuUseCase = module.get<CreateSkuUseCase>(CreateSkuUseCase);
-    findAllSkusUseCase = module.get<FindAllSkusUseCase>(FindAllSkusUseCase);
-    findSkuByIdUseCase = module.get<FindSkuByIdUseCase>(FindSkuByIdUseCase);
-    findSkuByCodeUseCase =
-      module.get<FindSkuByCodeUseCase>(FindSkuByCodeUseCase);
-    updateSkuUseCase = module.get<UpdateSkuUseCase>(UpdateSkuUseCase);
-    updateSkuStatusUseCase = module.get<UpdateSkuStatusUseCase>(
-      UpdateSkuStatusUseCase,
-    );
 
     // Reset all mocks before each test
     jest.clearAllMocks();
@@ -115,8 +100,9 @@ describe('SkuController', () => {
 
       const result = await controller.create(mockSkuInputDTO);
 
-      expect(createSkuUseCase.execute).toHaveBeenCalledWith(mockSkuInputDTO);
-      expect(createSkuUseCase.execute).toHaveBeenCalledTimes(1);
+      const mockExecute = mockCreateSkuUseCase.execute;
+      expect(mockExecute).toHaveBeenCalledWith(mockSkuInputDTO);
+      expect(mockExecute).toHaveBeenCalledTimes(1);
       expect(result).toEqual(mockSkuDto);
     });
 
@@ -127,7 +113,8 @@ describe('SkuController', () => {
       await expect(controller.create(mockSkuInputDTO)).rejects.toThrow(
         'SKU already exists',
       );
-      expect(createSkuUseCase.execute).toHaveBeenCalledWith(mockSkuInputDTO);
+      const mockExecute = mockCreateSkuUseCase.execute;
+      expect(mockExecute).toHaveBeenCalledWith(mockSkuInputDTO);
     });
   });
 
@@ -138,8 +125,9 @@ describe('SkuController', () => {
 
       const result = await controller.findAll();
 
-      expect(findAllSkusUseCase.execute).toHaveBeenCalledWith();
-      expect(findAllSkusUseCase.execute).toHaveBeenCalledTimes(1);
+      const mockExecute = mockFindAllSkusUseCase.execute;
+      expect(mockExecute).toHaveBeenCalledWith();
+      expect(mockExecute).toHaveBeenCalledTimes(1);
       expect(result).toEqual(mockSkuList);
     });
   });
@@ -153,11 +141,9 @@ describe('SkuController', () => {
 
       const result = await controller.update(skuId, mockSkuInputDTO);
 
-      expect(updateSkuUseCase.execute).toHaveBeenCalledWith(
-        skuId,
-        mockSkuInputDTO,
-      );
-      expect(updateSkuUseCase.execute).toHaveBeenCalledTimes(1);
+      const mockExecute = mockUpdateSkuUseCase.execute;
+      expect(mockExecute).toHaveBeenCalledWith(skuId, mockSkuInputDTO);
+      expect(mockExecute).toHaveBeenCalledTimes(1);
       expect(result).toEqual(updatedSkuDto);
     });
 
@@ -168,10 +154,8 @@ describe('SkuController', () => {
       await expect(controller.update(skuId, mockSkuInputDTO)).rejects.toThrow(
         'SKU not found',
       );
-      expect(updateSkuUseCase.execute).toHaveBeenCalledWith(
-        skuId,
-        mockSkuInputDTO,
-      );
+      const mockExecute = mockUpdateSkuUseCase.execute;
+      expect(mockExecute).toHaveBeenCalledWith(skuId, mockSkuInputDTO);
     });
   });
 
@@ -188,11 +172,9 @@ describe('SkuController', () => {
 
       const result = await controller.updateStatus(skuId, status);
 
-      expect(updateSkuStatusUseCase.execute).toHaveBeenCalledWith(
-        skuId,
-        status,
-      );
-      expect(updateSkuStatusUseCase.execute).toHaveBeenCalledTimes(1);
+      const mockExecute = mockUpdateSkuStatusUseCase.execute;
+      expect(mockExecute).toHaveBeenCalledWith(skuId, status);
+      expect(mockExecute).toHaveBeenCalledTimes(1);
       expect(result).toEqual(updatedSkuDto);
     });
 
@@ -203,10 +185,8 @@ describe('SkuController', () => {
       await expect(controller.updateStatus(skuId, status)).rejects.toThrow(
         'Invalid status transition',
       );
-      expect(updateSkuStatusUseCase.execute).toHaveBeenCalledWith(
-        skuId,
-        status,
-      );
+      const mockExecute = mockUpdateSkuStatusUseCase.execute;
+      expect(mockExecute).toHaveBeenCalledWith(skuId, status);
     });
   });
 
@@ -218,8 +198,9 @@ describe('SkuController', () => {
 
       const result = await controller.findById(skuId);
 
-      expect(findSkuByIdUseCase.execute).toHaveBeenCalledWith(skuId);
-      expect(findSkuByIdUseCase.execute).toHaveBeenCalledTimes(1);
+      const mockExecute = mockFindSkuByIdUseCase.execute;
+      expect(mockExecute).toHaveBeenCalledWith(skuId);
+      expect(mockExecute).toHaveBeenCalledTimes(1);
       expect(result).toEqual(mockSkuDto);
     });
 
@@ -228,7 +209,8 @@ describe('SkuController', () => {
       mockFindSkuByIdUseCase.execute.mockRejectedValue(error);
 
       await expect(controller.findById(skuId)).rejects.toThrow('SKU not found');
-      expect(findSkuByIdUseCase.execute).toHaveBeenCalledWith(skuId);
+      const mockExecute = mockFindSkuByIdUseCase.execute;
+      expect(mockExecute).toHaveBeenCalledWith(skuId);
     });
   });
 
@@ -240,8 +222,9 @@ describe('SkuController', () => {
 
       const result = await controller.findBySku(skuCode);
 
-      expect(findSkuByCodeUseCase.execute).toHaveBeenCalledWith(skuCode);
-      expect(findSkuByCodeUseCase.execute).toHaveBeenCalledTimes(1);
+      const mockExecute = mockFindSkuByCodeUseCase.execute;
+      expect(mockExecute).toHaveBeenCalledWith(skuCode);
+      expect(mockExecute).toHaveBeenCalledTimes(1);
       expect(result).toEqual(mockSkuDto);
     });
 
@@ -252,7 +235,8 @@ describe('SkuController', () => {
       await expect(controller.findBySku(skuCode)).rejects.toThrow(
         'SKU not found',
       );
-      expect(findSkuByCodeUseCase.execute).toHaveBeenCalledWith(skuCode);
+      const mockExecute = mockFindSkuByCodeUseCase.execute;
+      expect(mockExecute).toHaveBeenCalledWith(skuCode);
     });
   });
 });

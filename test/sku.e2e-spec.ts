@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import request from 'supertest';
+import { Server } from 'http';
 import { AppModule } from '../src/app.module';
 import { SkuDto, SkuStatusEnum } from '../src/sku/sku.dto';
 import { getRepositoryToken } from '@nestjs/typeorm';
@@ -8,7 +9,7 @@ import { SkuEntity } from '../src/db/entities/sku.entity';
 import { Repository } from 'typeorm';
 
 describe('SkuController (e2e)', () => {
-  let app: INestApplication;
+  let app: INestApplication<Server>;
   let skuRepository: Repository<SkuEntity>;
 
   const validSkuData = {
