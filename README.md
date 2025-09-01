@@ -1,6 +1,6 @@
 ## Possiveis Melhorias
 
-- Aumentar a cobertura dos testes;
+- Aumentar a cobertura dos testes (Devido ao tempo realizei apenas alguns testes dos cases principais);
 - Terminar de resolver todos os lint's;
 - Melhorar documentação;
 
