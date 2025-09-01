@@ -8,8 +8,8 @@
 
 ### Pré-requisitos
 
-- Node.js (versão 22)
-- pnpm
+- Node.js (versão 22 LTS)
+- pnpm (npm install -g pnpm@latest-10)
 - Docker e Docker Compose
 
 ### 1. Clonar o repositório
